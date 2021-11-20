@@ -24,14 +24,39 @@ def get_average_color_for_quadrant(img_pixels: ndarray,
                                    start_width: int,
                                    start_height: int,
                                    mosaic_size: int) -> int:
-
     avg_color = 0
-    for n in range(start_width, start_width + mosaic_size):
-        for k in range(start_height, start_height + mosaic_size):
+
+    (right_height_bound, right_width_bound) = find_right_bounds_for_image_processing(img_pixels,
+                                                                                     start_width,
+                                                                                     start_height,
+                                                                                     mosaic_size)
+
+    for n in range(start_height, right_height_bound):
+        for k in range(start_width, right_width_bound):
             pixel = img_pixels[n][k]
             avg_color += int(np.average(pixel))
     avg_color //= mosaic_size * mosaic_size
     return avg_color
+
+
+def find_right_bounds_for_image_processing(img_pixels: ndarray,
+                                           start_width: int,
+                                           start_height: int,
+                                           mosaic_size: int) -> tuple:
+    img_height = len(img_pixels)
+    img_width = len(img_pixels[1])
+
+    right_height_bound = start_height + mosaic_size
+
+    if start_height + mosaic_size >= img_height:
+        right_height_bound -= (start_height + mosaic_size) % img_height
+
+    right_width_bound = start_width + mosaic_size
+
+    if start_width + mosaic_size >= img_width:
+        right_width_bound -= (start_width + mosaic_size) % img_width
+
+    return right_height_bound, right_width_bound
 
 
 def put_grey_in_quadrant(img_pixels: ndarray,
@@ -40,7 +65,12 @@ def put_grey_in_quadrant(img_pixels: ndarray,
                          avg_color: int,
                          mosaic_size: int,
                          grey_gradation: int) -> None:
-    for n in range(start_width, start_width + mosaic_size):
-        for k in range(start_height, start_height + mosaic_size):
+    (right_height_bound, right_width_bound) = find_right_bounds_for_image_processing(img_pixels,
+                                                                                     start_width,
+                                                                                     start_height,
+                                                                                     mosaic_size)
+
+    for n in range(start_height, right_height_bound):
+        for k in range(start_width, right_width_bound):
             img_pixels[n][k] = \
                 [avg_color // grey_gradation * grey_gradation] * len(img_pixels[n][k])
